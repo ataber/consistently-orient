@@ -1,17 +1,13 @@
-var split = require('edge-split');
+var bunny = require('bunny');
 var orient = require('./index');
 var normals = require('normals');
 
-var cells = [[0,1,2], [1,2,3]]
-var positions = [[1,1,0], [-1,1,0], [1,-1,0], [-1,-1,0]];
-var refined = split(cells, positions, 1e-9, 10);
-cells = refined.cells
-positions = refined.positions
+var cells = bunny.cells
+var positions = bunny.positions
 
 var flipCount = 0;
 var cells = cells.map(function(cell, cellIndex) {
-  // if (Math.random() >= 0.5) {
-  if (cellIndex % 3 == 0) {
+  if (Math.random() >= 0.5) {
     // flip orientation
     flipCount++;
     return [cell[1], cell[0], cell[2]];

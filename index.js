@@ -1,34 +1,39 @@
 var complex = require('simplicial-complex');
-var orientation = require('cell-orientation')
+
+function orientation(cell, edge) {
+  var indexA = cell.indexOf(edge[0]);
+  var indexB = cell.indexOf(edge[1]);
+
+  if (indexA == 0 && indexB == cell.length - 1) {
+    return -1;
+  } else if (indexB == 0 && indexA == cell.length - 1) {
+    return 1;
+  } else {
+    return indexB - indexA;
+  }
+}
 
 module.exports = function(cells) {
-  var flipCount = 0;
-
   cells = Array.from(cells);
   complex.normalize(cells);
   components = complex.connectedComponents(cells);
   components.map(function(component) {
     var edges = complex.unique(complex.skeleton(component, 1));
     var vertices = complex.unique(complex.skeleton(component, 0));
-    var visitedCells = new Set();
+    var correctlyOrientedCells = new Set();
     var visitedEdges = new Array(edges.length).fill(false);
     var edgeToCellIncidence = complex.incidence(edges, component);
     var cellsToVisit = [0];
     while (cellsToVisit.length > 0) {
       var cellIndex = cellsToVisit.pop();
       var cell = component[cellIndex];
-
-      if (visitedCells.has(cellIndex)) {
-        console.log("visited", cellIndex)
-        continue;
-      } else {
-        visitedCells.add(cellIndex);
-      }
+      correctlyOrientedCells.add(cellIndex);
 
       for (var i = 0; i < cell.length; i++) {
         var j = (i + 1) % cell.length;
         var edge = [cell[i], cell[j]];
         var edgeIndex = complex.findCell(edges, edge);
+
         if (visitedEdges[edgeIndex]) {
           continue;
         } else {
@@ -47,23 +52,22 @@ module.exports = function(cells) {
         var neighbor = component[neighborIndex];
         cellsToVisit.push(neighborIndex);
 
-        var orientationA = orientation(cell);
-        var orientationB = orientation(neighbor);
-        console.log(cellIndex, neighborIndex, cell, neighbor, edge, orientationA, orientationB)
+        var orientationA = orientation(cell, edge);
+        var orientationB = orientation(neighbor, edge);
 
         if (Math.sign(orientationA) == Math.sign(orientationB)) {
-          if (visitedCells.has(neighborIndex)) {
+          if (correctlyOrientedCells.has(neighborIndex)) {
             throw `Non-orientable manifold!`;
           }
 
           // flip orientation
           component[neighborIndex] = [neighbor[1], neighbor[0], neighbor[2]];
-          flipCount++;
         }
+
+        correctlyOrientedCells.add(neighborIndex);
       }
     }
   });
-  console.log(flipCount);
 
   return [].concat.apply([], components);
 }
