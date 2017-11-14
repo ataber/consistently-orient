@@ -6,7 +6,7 @@ Depth-first traversal through simplicial complex to consistently orient cells (a
 
 ## Usage
 
-[![NPM](https://nodei.co/npm/consistently_orient.png)](https://www.npmjs.com/package/consistently_orient)
+[![NPM](https://nodei.co/npm/consistently-orient.png)](https://www.npmjs.com/package/consistently-orient)
 
 ```javascript
 var bunny          = require('bunny')
