@@ -19,54 +19,71 @@ module.exports = function(cells) {
   components = complex.connectedComponents(cells);
   components.map(function(component) {
     var edges = complex.unique(complex.skeleton(component, 1));
-    var vertices = complex.unique(complex.skeleton(component, 0));
-    var correctlyOrientedCells = new Set();
+    var correctlyOrientedCells = new Array(component.length).fill(false);
     var visitedEdges = new Array(edges.length).fill(false);
     var edgeToCellIncidence = complex.incidence(edges, component);
-    var cellsToVisit = [0];
-    while (cellsToVisit.length > 0) {
-      var cellIndex = cellsToVisit.pop();
-      var cell = component[cellIndex];
-      correctlyOrientedCells.add(cellIndex);
 
-      for (var i = 0; i < cell.length; i++) {
-        var j = (i + 1) % cell.length;
-        var edge = [cell[i], cell[j]];
-        var edgeIndex = complex.findCell(edges, edge);
+    function orientManifoldPatch(seedCellIndex) {
+      var cellsToVisit = [seedCellIndex];
+      console.log(cellsToVisit, component[seedCellIndex])
+      while (cellsToVisit.length > 0) {
+        var cellIndex = cellsToVisit.pop();
+        var cell = component[cellIndex];
+        correctlyOrientedCells[cellIndex] = true;
 
-        if (visitedEdges[edgeIndex]) {
-          continue;
-        } else {
-          visitedEdges[edgeIndex] = true;
-        }
+        for (var i = 0; i < cell.length; i++) {
+          var j = (i + 1) % cell.length;
+          var edge = [cell[i], cell[j]];
+          var edgeIndex = complex.findCell(edges, edge);
 
-        var neighboringCells = edgeToCellIncidence[edgeIndex];
-        if (neighboringCells.length > 2) {
-          throw `Non-manifold edge with cells: ${neighboringCells}`;
-        } else if (neighboringCells.length == 1) {
-          // boundary edge
-          continue;
-        }
-
-        var neighborIndex = neighboringCells[(neighboringCells.indexOf(cellIndex) + 1) % 2];
-        var neighbor = component[neighborIndex];
-        cellsToVisit.push(neighborIndex);
-
-        var orientationA = orientation(cell, edge);
-        var orientationB = orientation(neighbor, edge);
-
-        if (Math.sign(orientationA) == Math.sign(orientationB)) {
-          if (correctlyOrientedCells.has(neighborIndex)) {
-            throw `Non-orientable manifold!`;
+          if (visitedEdges[edgeIndex]) {
+            continue;
+          } else {
+            visitedEdges[edgeIndex] = true;
           }
 
-          // flip orientation
-          component[neighborIndex] = [neighbor[1], neighbor[0], neighbor[2]];
-        }
+          var neighboringCells = edgeToCellIncidence[edgeIndex];
+          if (neighboringCells.length > 2) {
+            // disallow propagation of orientation across non-manifold edges
+            continue;
+          } else if (neighboringCells.length == 1) {
+            // boundary edge, no neighbor to flip
+            continue;
+          }
 
-        correctlyOrientedCells.add(neighborIndex);
+          var neighborIndex = neighboringCells[(neighboringCells.indexOf(cellIndex) + 1) % 2];
+          var neighbor = component[neighborIndex];
+          cellsToVisit.push(neighborIndex);
+
+          var orientationA = orientation(cell, edge);
+          var orientationB = orientation(neighbor, edge);
+
+          if (Math.sign(orientationA) == Math.sign(orientationB)) {
+            if (correctlyOrientedCells[neighborIndex]) {
+              throw `Non-orientable manifold!`;
+            }
+
+            // flip orientation
+            component[neighborIndex] = [neighbor[1], neighbor[0], neighbor[2]];
+          }
+
+          correctlyOrientedCells[neighborIndex] = true;
+        }
       }
     }
+
+    orientManifoldPatch(0);
+
+    function notCorrectlyOriented(c) {
+      return !c;
+    };
+    var nextCellIndex;
+    while ((nextCellIndex = correctlyOrientedCells.findIndex(notCorrectlyOriented)) && nextCellIndex !== -1) {
+      // orient each manifold patch using an arbitrary representative as seed cell
+      orientManifoldPatch(nextCellIndex);
+    }
+
+    return component;
   });
 
   return [].concat.apply([], components);

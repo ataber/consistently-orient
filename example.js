@@ -1,4 +1,8 @@
 var bunny = require('bunny');
+
+// if you want to see a non-manifold example uncomment the following line
+// bunny = require('snowden');
+
 var orient = require('./index');
 var normals = require('normals');
 
