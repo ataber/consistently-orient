@@ -25,7 +25,6 @@ module.exports = function(cells) {
 
     function orientManifoldPatch(seedCellIndex) {
       var cellsToVisit = [seedCellIndex];
-      console.log(cellsToVisit, component[seedCellIndex])
       while (cellsToVisit.length > 0) {
         var cellIndex = cellsToVisit.pop();
         var cell = component[cellIndex];
