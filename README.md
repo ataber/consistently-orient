@@ -10,7 +10,12 @@ Depth-first traversal through 2D simplicial complex to consistently orient cells
 
 ```javascript
 var bunny          = require('bunny')
-var flippedCount   = orient(cells);
+var flippedCount   = orient(bunny.cells);
+
+// possible further global checks: volume (as follows) or raytracing
+if (require('mesh-mass')(bunny.cells, bunny.positions).volume < 0) {
+  // volume is negative, implying the global orientation must be flipped
+}
 ```
 
 `require("consistently-orient")(cells)`
