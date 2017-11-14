@@ -22,7 +22,7 @@ var cells = cells.map(function(cell, cellIndex) {
 
 console.log('flipped', flipCount, 'cells');
 console.time('orient');
-cells = orient(cells);
+console.log('reflipped', orient(cells));
 console.timeEnd('orient');
 
 var regl = require('regl')()
