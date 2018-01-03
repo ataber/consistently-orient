@@ -1,6 +1,6 @@
 {
   "name": "consistently-orient",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Consistently orient manifold patches of a 2D simplicial complex",
   "main": "index.js",
   "scripts": {

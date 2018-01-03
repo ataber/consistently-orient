@@ -14,6 +14,10 @@ function orientation(cell, edge) {
 }
 
 module.exports = function(cells) {
+  if (cells.length == 0) {
+    return 0;
+  }
+
   var flipCount = 0;
   complex.normalize(cells);
   var edges = complex.unique(complex.skeleton(cells, 1));
